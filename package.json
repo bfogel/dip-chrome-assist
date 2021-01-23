@@ -1,0 +1,13 @@
+{
+    "name": "dip-chrome-assist",
+    "version": "1.0",
+    "scripts": {
+        "dev": "webpack --mode=development --watch"
+    },
+    "devDependencies": {
+        "copy-webpack-plugin": "5.1.1",
+        "webpack": "4.44.2",
+        "webpack-cli": "3.3.12",
+        "webpack-chrome-extension-reloader": "1.1.2"
+    }
+}
