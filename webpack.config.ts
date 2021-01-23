@@ -5,6 +5,7 @@ import ExtensionReloader from 'webpack-extension-reloader';
 
 const config: webpack.Configuration = {
     entry: {
+        'background': './src/background.ts',
         'content': './src/content.ts'
     },
 
@@ -35,6 +36,7 @@ const config: webpack.Configuration = {
             port: 9090,
             reloadPage: true,
             entries: {
+                background: 'background',
                 contentScript: ['content']
             }
         })
