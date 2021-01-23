@@ -52,12 +52,7 @@ function UpdateCountdown() {
 }
 
 function Speak(sText: string) {
-  const utter = new SpeechSynthesisUtterance();
-  utter.lang = 'en-US';
-  utter.text = sText;
-  utter.volume = 0.5;
-
-  window.speechSynthesis.speak(utter);
+  chrome.runtime.sendMessage({ toSay: sText });
 }
 
 SetupCountdownTimer();
