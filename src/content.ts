@@ -43,6 +43,9 @@ function UpdateCountdown() {
   const s = hours.toString() + ":" + minutes.toString().padStart(2, "0") + ":" + seconds.toString().padStart(2, "0");
   mCountdownSpan.innerHTML = s;
 
+  var style = GetCountdownStyle(hours, minutes);
+  mCountdownSpan.setAttribute("style", style);
+
   if (countdown > 0) {
     if (seconds == 0) {
       Speak(minutes.toString() + " minutes left");
@@ -53,6 +56,30 @@ function UpdateCountdown() {
 
 function Speak(sText: string) {
   chrome.runtime.sendMessage({ toSay: sText });
+}
+
+function GetCountdownStyle(hours : number, minutes : number)
+{
+  var fontSize = GetCountdownStyleFontSize();
+  var color = GetCountdownStyleColor(hours, minutes);
+  return fontSize+color;
+}
+
+function GetCountdownStyleFontSize()
+{
+  return "font-Size : 250%;";
+}
+
+function GetCountdownStyleColor(hours : number, minutes : number)
+{
+  if (hours == 0 && minutes == 0)
+  {
+    return "color : red;";
+  }
+  else
+  {
+    return "";
+  }
 }
 
 SetupCountdownTimer();
