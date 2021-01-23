@@ -2,20 +2,14 @@
   "manifest_version": 2,
   "name": "DipAssist",
   "version": "1.0",
-  "permissions": ["tts"],
-
-"content_scripts": [
-  {
-    "matches": [
-      "https://www.backstabbr.com/*"
-    ],
-    "js": ["content.js"]
-  }
-],
-
-  "background": {
-    "scripts": ["background.js"],
-    "persistent": false
-  }
-
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.backstabbr.com/*"
+      ],
+      "js": [
+        "content.js"
+      ]
+    }
+  ]
 }
