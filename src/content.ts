@@ -40,7 +40,7 @@ function UpdateCountdown() {
 
   const seconds = Math.floor(countdown / 1000);
 
-  const s = hours.toString() + ":" + minutes.toString().padStart(2, "0") + ":" + seconds.toString().padStart(2, "0");
+  const s = hours.toString() + " hours, " + minutes.toString().padStart(2, "0") + " minutes, " + seconds.toString().padStart(2, "0") + " seconds";
   mCountdownSpan.innerHTML = s;
 
   var style = GetCountdownStyle(hours, minutes);
