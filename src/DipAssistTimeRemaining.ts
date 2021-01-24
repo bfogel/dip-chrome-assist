@@ -132,8 +132,6 @@ class DipAssistTimeRemaining{
     switch(this.language)
     {
       case "English":
-        displayValue = this.minutes == 1 || this.minutes == -1 ? "minute" : "minutes";
-        break;
       case "French":
         displayValue = this.minutes == 1 || this.minutes == -1 ? "minute" : "minutes";
         break;
