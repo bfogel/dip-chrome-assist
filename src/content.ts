@@ -40,8 +40,11 @@ function UpdateCountdown() {
 
   const seconds = Math.floor(countdown / 1000);
 
-  const s = hours.toString() + ":" + minutes.toString().padStart(2, "0") + ":" + seconds.toString().padStart(2, "0");
+  const s = hours.toString() + " hours, " + minutes.toString().padStart(2, "0") + " minutes, " + seconds.toString().padStart(2, "0") + " seconds";
   mCountdownSpan.innerHTML = s;
+
+  var style = GetCountdownStyle(hours, minutes);
+  mCountdownSpan.setAttribute("style", style);
 
   if (countdown > 0) {
     if (seconds == 0) {
@@ -53,6 +56,30 @@ function UpdateCountdown() {
 
 function Speak(sText: string) {
   chrome.runtime.sendMessage({ toSay: sText });
+}
+
+function GetCountdownStyle(hours : number, minutes : number)
+{
+  var fontSize = GetCountdownStyleFontSize();
+  var color = GetCountdownStyleColor(hours, minutes);
+  return fontSize+color;
+}
+
+function GetCountdownStyleFontSize()
+{
+  return "font-Size : 250%;";
+}
+
+function GetCountdownStyleColor(hours : number, minutes : number)
+{
+  if (hours == 0 && minutes == 0)
+  {
+    return "color : red;";
+  }
+  else
+  {
+    return "";
+  }
 }
 
 SetupCountdownTimer();
