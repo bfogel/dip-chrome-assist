@@ -1,3 +1,5 @@
+import { DipAssistTimeRemaining } from "./DipAssistTimeRemaining";
+
 let mDeadline: number;
 let mCountdownSpan: HTMLElement | null;
 let timeAssist: DipAssistTimeRemaining; 
@@ -7,7 +9,7 @@ function SetupCountdownTimer() {
   if (elm == null) return;
 
   let s = elm.innerHTML;
-  elm.innerHTML += "<br><span id='dipCountdownSpan'>poop</span>";
+  elm.innerHTML += "<br><span id='dipCountdownSpan'>waffles</span>";
   mCountdownSpan = document.getElementById("dipCountdownSpan");
 
   let ss = s.split("(");
@@ -31,7 +33,7 @@ function UpdateCountdown() {
 
   let countdown = mDeadline - Date.now();
 
-  timeAssist = new DipAssistTimeRemaining(countdown);
+  timeAssist = new DipAssistTimeRemaining(countdown, "English");
   mCountdownSpan.innerHTML = timeAssist.GetTimeRemainingDisplayValue();
 
   var style = GetCountdownStyle();

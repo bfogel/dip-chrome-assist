@@ -1,4 +1,4 @@
-class DipAssistTimeRemaining{
+export class DipAssistTimeRemaining{
   public readonly days: number;
   public readonly hours: number;
   public readonly minutes: number;
@@ -17,8 +17,8 @@ class DipAssistTimeRemaining{
 
   public GetSpanStylePartFromTimeRemaining() : string
   {
-    var fontSize = GetCountdownStyleFontSize();
-    var color = GetCountdownStyleColor();
+    var fontSize = this.GetCountdownStyleFontSize();
+    var color = this.GetCountdownStyleColor();
     return fontSize+color;
   }
 
@@ -52,6 +52,7 @@ class DipAssistTimeRemaining{
         displayValue = "The deadline has passed.";
       }
 
+      debugger
       return displayValue;
   }
 
@@ -156,6 +157,19 @@ class DipAssistTimeRemaining{
           throw new Error("unsupported language in DipAssistTimeRemaining: " + this.language);
     }
     return displayValue;
+  }
+
+  private GetCountdownStyleColor()
+  {
+    if (this.days == 0 && this.hours == 0 && this.minutes == 0)
+    {
+      return "color : red;";
+    }
+  }
+
+  private GetCountdownStyleFontSize()
+  {
+    return "font-Size : 250%;";
   }
 
   private milliseconds: number;

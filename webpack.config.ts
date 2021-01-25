@@ -2,6 +2,7 @@ import * as webpack from 'webpack';
 
 import CopyPlugin from 'copy-webpack-plugin';
 import ExtensionReloader from 'webpack-extension-reloader';
+import { DipAssistTimeRemaining } from "c:/dev/dip-chrome-assist/src/DipAssistTimeRemaining"
 
 const config: webpack.Configuration = {
     entry: {
