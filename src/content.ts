@@ -2,7 +2,7 @@ import { DipAssistTimeRemaining } from "./DipAssistTimeRemaining";
 
 let mDeadline: number;
 let mCountdownSpan: HTMLElement | null;
-let timeAssist: DipAssistTimeRemaining; 
+let timeAssist: DipAssistTimeRemaining = new DipAssistTimeRemaining(Date.now(), "English");; 
 
 function SetupCountdownTimer() {
   const elm = document.getElementById("adjudication-info");
@@ -31,9 +31,6 @@ function UpdateCountdown() {
   if (mDeadline == null) return;
   if (mCountdownSpan == null) return;
 
-  let countdown = mDeadline - Date.now();
-
-  timeAssist = new DipAssistTimeRemaining(countdown, "English");
   mCountdownSpan.innerHTML = timeAssist.GetTimeRemainingDisplayValue();
 
   var style = GetCountdownStyle();
