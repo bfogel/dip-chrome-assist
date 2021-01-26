@@ -1,12 +1,17 @@
 export class DipAssistTimeRemaining{
-  public readonly days: number;
-  public readonly hours: number;
-  public readonly minutes: number;
-  public readonly seconds: number;
+  public days: number;
+  public hours: number;
+  public minutes: number;
+  public seconds: number;
   public readonly timeRemainingDisplay: HTMLElement | null;
   public readonly language: string;
 
-  public constructor(milliseconds : number, language : string = "English")
+  public constructor(language : string = "English")
+  {
+    this.language = language;
+  }
+
+  public InitialitizeCountdown(milliseconds : number)
   {
     this.milliseconds = milliseconds;
     this.days = this.DaysFromMilliseconds();
@@ -15,8 +20,32 @@ export class DipAssistTimeRemaining{
     this.seconds = this.SecondsFromMilliseconds();
   }
 
+  public IsInitialized() : Boolean
+  {
+    return !this.CountdownIsNotInitialized();
+  }
+
+  public UpdateCountdown(milliseconds : number)
+  {
+    this.InitialitizeCountdown(milliseconds);
+  }
+
+  private DoValidationCheck() 
+  {
+    if (this.CountdownIsNotInitialized())
+    {
+      throw new Error("dipAssistTimeRemaining countdown has not be initialized. call InitialitizeCountdown(milliseconds : number)");
+    }
+  }
+
+  private CountdownIsNotInitialized() : Boolean
+  {
+    return this.milliseconds == null;
+  }
+
   public GetSpanStylePartFromTimeRemaining() : string
   {
+    this.DoValidationCheck();
     var fontSize = this.GetCountdownStyleFontSize();
     var color = this.GetCountdownStyleColor();
     return fontSize+color;
@@ -24,36 +53,37 @@ export class DipAssistTimeRemaining{
 
   public GetTimeRemainingDisplayValue() : string 
   {
-      var daysPart = this.days + " " + this.GetDaysDisplayValueByLanguage() + ", ";
-      var hoursPart = this.hours + " " + this.GetHoursDisplayValueByLanguage() + ", ";
-      var minutesPart = this.minutes + " " + this.GetMinutesDisplayValueByLanguage() + ", ";
-      var secondsPart = this.seconds + " " + this.GetSecondsDisplayValueByLanguage();
+    this.DoValidationCheck();
+    var daysPart = this.days + " " + this.GetDaysDisplayValueByLanguage() + ", ";
+    var hoursPart = this.hours + " " + this.GetHoursDisplayValueByLanguage() + ", ";
+    var minutesPart = this.minutes + " " + this.GetMinutesDisplayValueByLanguage() + ", ";
+    var secondsPart = this.seconds + " " + this.GetSecondsDisplayValueByLanguage();
 
-      var displayValue;
+    var displayValue;
 
-      if (this.days > 0)
-      {
-        displayValue = daysPart + hoursPart + minutesPart + secondsPart;
-      }
-      else if (this.hours > 0)
-      {
-        displayValue = hoursPart + minutesPart + secondsPart;
-      }
-      else if (this.minutes > 0)
-      {
-        displayValue = minutesPart + secondsPart;
-      }
-      else if (this.seconds > 0)
-      {
-        displayValue = secondsPart;
-      }
-      else
-      {
-        displayValue = "The deadline has passed.";
-      }
+    if (this.days > 0)
+    {
+      displayValue = daysPart + hoursPart + minutesPart + secondsPart;
+    }
+    else if (this.hours > 0)
+    {
+      displayValue = hoursPart + minutesPart + secondsPart;
+    }
+    else if (this.minutes > 0)
+    {
+      displayValue = minutesPart + secondsPart;
+    }
+    else if (this.seconds > 0)
+    {
+      displayValue = secondsPart;
+    }
+    else
+    {
+      displayValue = "The deadline has passed.";
+    }
 
-      debugger
-      return displayValue;
+    
+    return displayValue;
   }
 
   private DaysFromMilliseconds() : number
@@ -67,10 +97,10 @@ export class DipAssistTimeRemaining{
   {
     if (this.milliseconds == null) return 0;
 
-    var days = this.DaysFromMilliseconds();
-    var millisecondsAfterDays = this.milliseconds - (days * this.MILLISECONDS_PER_DAY);
+    // var days = this.DaysFromMilliseconds();
+    // var millisecondsAfterDays = this.milliseconds - (days * this.MILLISECONDS_PER_DAY);
 
-    return Math.floor(millisecondsAfterDays / this.MILLISECONDS_PER_HOUR );
+    return Math.floor(this.milliseconds / this.MILLISECONDS_PER_HOUR );
   }
 
   private MinutesFromMilliseconds() : number
@@ -88,7 +118,7 @@ export class DipAssistTimeRemaining{
     if (this.milliseconds == null) return 0;
 
     var minutes = this.MinutesFromMilliseconds();
-    var millisecondsAfterMinutes = this.milliseconds - (minutes *  this.MILLISECONDS_PER_MINUTE);
+    var millisecondsAfterMinutes = this.milliseconds - (this.hours * this.MILLISECONDS_PER_HOUR) - (minutes *  this.MILLISECONDS_PER_MINUTE);
 
     return Math.floor(millisecondsAfterMinutes / this.MILLISECONDS_PER_SECOND);
   }

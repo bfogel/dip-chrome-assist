@@ -2,7 +2,7 @@ import { DipAssistTimeRemaining } from "./DipAssistTimeRemaining";
 
 let mDeadline: number;
 let mCountdownSpan: HTMLElement | null;
-let timeAssist: DipAssistTimeRemaining = new DipAssistTimeRemaining(Date.now(), "English");; 
+let timeAssist: DipAssistTimeRemaining;
 
 function SetupCountdownTimer() {
   const elm = document.getElementById("adjudication-info");
@@ -11,6 +11,7 @@ function SetupCountdownTimer() {
   let s = elm.innerHTML;
   elm.innerHTML += "<br><span id='dipCountdownSpan'>waffles</span>";
   mCountdownSpan = document.getElementById("dipCountdownSpan");
+  timeAssist = new DipAssistTimeRemaining("English");
 
   let ss = s.split("(");
   if (ss.length < 2) return;
@@ -24,12 +25,17 @@ function SetupCountdownTimer() {
   s = ss[0];
 
   mDeadline = Date.parse(s);
-
+  timeAssist.InitialitizeCountdown(mDeadline-Date.now());
 }
 
 function UpdateCountdown() {
   if (mDeadline == null) return;
   if (mCountdownSpan == null) return;
+  if (timeAssist == null || !timeAssist.IsInitialized()) return;
+
+  console.log('updating');
+
+  timeAssist.UpdateCountdown(mDeadline-Date.now());
 
   mCountdownSpan.innerHTML = timeAssist.GetTimeRemainingDisplayValue();
 
@@ -37,7 +43,7 @@ function UpdateCountdown() {
   mCountdownSpan.setAttribute("style", style);
 
   //  TODO: more informed shouldSpeakNow logic
-  if (this.shouldSpeakNow()) {
+  if (ShouldSpeakNow()) {
       if (timeAssist.minutes != 0)
       {
         Speak(timeAssist.minutes.toString() + " minutes left");
@@ -86,7 +92,7 @@ function GetCountdownStyleFontSize()
 
 function GetCountdownStyleColor()
 {
-  if (this.days == 0 && this.hours == 0 && this.minutes == 0)
+  if (timeAssist.IsInitialized() && timeAssist.days == 0 && timeAssist.hours == 0 && timeAssist.minutes == 0)
   {
     return "color : red;";
   }
