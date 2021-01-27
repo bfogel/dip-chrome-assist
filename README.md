@@ -11,3 +11,5 @@ See Issues for planned improvements.
 4) `yarn dev`
 5) Navigate to chrome://extensions/
 6) Click `Load unpacked` -> open `dist`
+
+To produce files for distribution:  yarn webpack --mode=production --progress --hide-modules
