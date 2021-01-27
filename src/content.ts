@@ -17,8 +17,8 @@ function SetupCountdownTimer() {
   mDeadline = Number( deadline );
 
   //Uncomment the line below to set a nearby deadline for testing
-  //mDeadline = Date.now() + 10 * 60000 + 5*1000;
-  
+  //mDeadline = Date.now() + 0 * 60000 + 5*1000;
+   
   const DeadlineDate = new Date(mDeadline);
 
   //NOTE: This is language-specific and will need to be modified for support beyond English
