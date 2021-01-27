@@ -1,9 +1,9 @@
 {
     "compilerOptions": {
         "outDir": "./dist/",
-        "module": "es2015",
+        "module": "commonjs", 
         "noImplicitAny": true,
-        "target": "es2015",
+        "target": "es2020", //was originally es5
         "lib": [
             "es5",
             "es6",

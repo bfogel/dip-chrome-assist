@@ -1,31 +1,61 @@
 import { DipAssistTimeRemaining } from "./DipAssistTimeRemaining";
+import { DipAssistAlertManager } from './DipAssistAlertManager';
 
 let mDeadline: number;
 let mCountdownSpan: HTMLElement | null;
+
 let timeAssist: DipAssistTimeRemaining;
+const mAlertManager  = new DipAssistAlertManager();
 
 function SetupCountdownTimer() {
-  const elm = document.getElementById("adjudication-info");
-  if (elm == null) return;
+  const AdjudicationInfoSpan = document.getElementById("adjudication-info");
+  if (AdjudicationInfoSpan == null) return;
+ 
+  const deadline = GetDeadlineFromAdjudicationInfoText( AdjudicationInfoSpan.innerHTML );
+  if (deadline === undefined) return;
 
-  let s = elm.innerHTML;
-  elm.innerHTML += "<br><span id='dipCountdownSpan'>waffles</span>";
+  mDeadline = Number( deadline );
+
+  mDeadline = Date.now() + 10 * 60000 + 5*1000;
+  const DeadlineDate = new Date(mDeadline);
+
+  //NOTE: This is language-specific and will need to be modified for support beyond English
+  AdjudicationInfoSpan.innerHTML = "Next adjudication: " + DeadlineDate.toString() + ".";
+  AdjudicationInfoSpan.innerHTML += "<br><span id='dipCountdownSpan'>iguana</span>";
+
   mCountdownSpan = document.getElementById("dipCountdownSpan");
   timeAssist = new DipAssistTimeRemaining("English");
 
-  let ss = s.split("(");
-  if (ss.length < 2) return;
+  timeAssist.InitialitizeCountdown(mDeadline - Date.now());
+  //mAlertManager.AddAlert(mDeadline - Date.now() - 10 * 1000);
 
-  s = ss[1];
-  if (s.length < 3) return;
-  s = s.slice(3);
+} 
 
-  ss = s.split(")");
-  if (ss.length < 1) return;
-  s = ss[0];
+function GetDeadlineFromAdjudicationInfoText(pText : string) : number | undefined {
+  let iSearch = pText.indexOf("(");
+  if(iSearch == -1) undefined;
 
-  mDeadline = Date.parse(s);
-  timeAssist.InitialitizeCountdown(mDeadline-Date.now());
+  let sDeadlineTimeAndDate = pText.substring(iSearch+1).trim();
+
+  iSearch = sDeadlineTimeAndDate.indexOf(")");
+  if(iSearch == -1) return undefined;
+  sDeadlineTimeAndDate = sDeadlineTimeAndDate.substring(0, iSearch).trim();
+
+  //NOTE: This is language-specific and will need to be modified for support beyond English
+  if(sDeadlineTimeAndDate.substring(0,2) == "at") sDeadlineTimeAndDate = sDeadlineTimeAndDate.substring(2).trim();
+
+  const sTimeZone = sDeadlineTimeAndDate.substring(sDeadlineTimeAndDate.length-4, sDeadlineTimeAndDate.length).trim();
+  sDeadlineTimeAndDate = sDeadlineTimeAndDate.substring(0,sDeadlineTimeAndDate.length-4).trim();
+
+  iSearch = sDeadlineTimeAndDate.indexOf(",");
+  if(iSearch == -1) return undefined;
+  const sTime = sDeadlineTimeAndDate.substring(0, iSearch).trim();
+  const sDate = sDeadlineTimeAndDate.substring(iSearch+1).trim();
+
+  sDeadlineTimeAndDate = sDate + " " + sTime + " " + sTimeZone;
+
+  return Date.parse( sDeadlineTimeAndDate );
+
 }
 
 function UpdateCountdown() {
@@ -33,73 +63,15 @@ function UpdateCountdown() {
   if (mCountdownSpan == null) return;
   if (timeAssist == null || !timeAssist.IsInitialized()) return;
 
-  console.log('updating');
-
-  timeAssist.UpdateCountdown(mDeadline-Date.now());
+  const totalms = Math.max(0, mDeadline-Date.now());
+  timeAssist.UpdateCountdown(totalms);
 
   mCountdownSpan.innerHTML = timeAssist.GetTimeRemainingDisplayValue();
+  mCountdownSpan.setAttribute("style", timeAssist.GetSpanStylePartFromTimeRemaining());
 
-  var style = GetCountdownStyle();
-  mCountdownSpan.setAttribute("style", style);
+  mAlertManager.CheckForAlert(timeAssist);
 
-  //  TODO: more informed shouldSpeakNow logic
-  if (ShouldSpeakNow()) {
-      if (timeAssist.minutes != 0)
-      {
-        Speak(timeAssist.minutes.toString() + " minutes left");
-      }
-      else
-      {
-        Speak(timeAssist.seconds.toString() + " seconds left");
-      }
-      
-    setTimeout(UpdateCountdown, 1000);
-  }
-}
-
-function Speak(sText: string) {
-  chrome.runtime.sendMessage({ toSay: sText });
-}
-
-function ShouldSpeakNow() : Boolean
-{
-  var shouldSpeakNow : Boolean;
-
-  //  TODO: flesh out content.ts determining when to speak
-  if (timeAssist.days == 0 && timeAssist.hours == 0 && timeAssist.minutes % 5 == 0  && timeAssist.seconds == 0)
-  {
-    shouldSpeakNow = true;
-  }
-  else
-  {
-   shouldSpeakNow = false; 
-  }
-
-  return shouldSpeakNow;
-}
-
-function GetCountdownStyle()
-{
-  var fontSize = GetCountdownStyleFontSize();
-  var color = GetCountdownStyleColor();
-  return fontSize+color;
-}
-
-function GetCountdownStyleFontSize()
-{
-  return "font-Size : 250%;";
-}
-
-function GetCountdownStyleColor()
-{
-  if (timeAssist.IsInitialized() && timeAssist.days == 0 && timeAssist.hours == 0 && timeAssist.minutes == 0)
-  {
-    return "color : red;";
-  }
-  else
-  {
-    return "";
-  }
+  setTimeout(UpdateCountdown, 1000);
 }
 
 SetupCountdownTimer();

@@ -3,63 +3,86 @@ export class DipAssistTimeRemaining{
   public hours: number;
   public minutes: number;
   public seconds: number;
-  public readonly timeRemainingDisplay: HTMLElement | null;
+  public totalMilliseconds: number;
+
   public readonly language: string;
 
-  public constructor(language : string = "English")
+  public constructor(language = "English")
   {
     this.language = language;
   }
 
-  public InitialitizeCountdown(milliseconds : number)
+  public InitialitizeCountdown(totalMilliseconds : number) : void
   {
-    this.milliseconds = milliseconds;
+    this.totalMilliseconds = totalMilliseconds;
     this.days = this.DaysFromMilliseconds();
     this.hours = this.HoursFromMilliseconds();
     this.minutes = this.MinutesFromMilliseconds();
     this.seconds = this.SecondsFromMilliseconds();
   }
 
-  public IsInitialized() : Boolean
+  public Duplicate() : DipAssistTimeRemaining{
+    const ret = new DipAssistTimeRemaining(this.language);
+    ret.InitialitizeCountdown(this.totalMilliseconds);
+    return ret;
+  }
+
+  public IsInitialized() : boolean
   {
     return !this.CountdownIsNotInitialized();
   }
 
-  public UpdateCountdown(milliseconds : number)
+  public UpdateCountdown(totalMilliseconds : number) : void
   {
-    this.InitialitizeCountdown(milliseconds);
+    this.InitialitizeCountdown(totalMilliseconds);
+  }
+
+  public IsEqualTo( pTimeRemaining : DipAssistTimeRemaining) : boolean {
+    return this.totalMilliseconds == pTimeRemaining.totalMilliseconds;
+  }
+  public IsLargerThan( pTimeRemaining : DipAssistTimeRemaining) : boolean {
+    return this.totalMilliseconds > pTimeRemaining.totalMilliseconds;
+  }
+  public IsLargerThanOrEqualTo( pTimeRemaining : DipAssistTimeRemaining) : boolean {
+    return this.totalMilliseconds >= pTimeRemaining.totalMilliseconds;
+  }
+  public IsSmallerThan( pTimeRemaining : DipAssistTimeRemaining) : boolean {
+    return this.totalMilliseconds < pTimeRemaining.totalMilliseconds;
+  }
+  public IsSmallerThanOrEqualTo( pTimeRemaining : DipAssistTimeRemaining) : boolean {
+    return this.totalMilliseconds <= pTimeRemaining.totalMilliseconds;
   }
 
   private DoValidationCheck() 
   {
     if (this.CountdownIsNotInitialized())
     {
-      throw new Error("dipAssistTimeRemaining countdown has not be initialized. call InitialitizeCountdown(milliseconds : number)");
+      throw new Error("dipAssistTimeRemaining countdown has not be initialized. call InitialitizeCountdown(totalMilliseconds : number)");
     }
   }
 
-  private CountdownIsNotInitialized() : Boolean
+  private CountdownIsNotInitialized() : boolean
   {
-    return this.milliseconds == null;
+    return this.totalMilliseconds == null;
   }
 
   public GetSpanStylePartFromTimeRemaining() : string
   {
     this.DoValidationCheck();
-    var fontSize = this.GetCountdownStyleFontSize();
-    var color = this.GetCountdownStyleColor();
+    const fontSize = this.GetCountdownStyleFontSize();
+    const color = this.GetCountdownStyleColor();
     return fontSize+color;
   }
 
   public GetTimeRemainingDisplayValue() : string 
   {
     this.DoValidationCheck();
-    var daysPart = this.days + " " + this.GetDaysDisplayValueByLanguage() + ", ";
-    var hoursPart = this.hours + " " + this.GetHoursDisplayValueByLanguage() + ", ";
-    var minutesPart = this.minutes + " " + this.GetMinutesDisplayValueByLanguage() + ", ";
-    var secondsPart = this.seconds + " " + this.GetSecondsDisplayValueByLanguage();
+    const daysPart = this.days + " " + this.GetDaysDisplayValueByLanguage() + ", ";
+    const hoursPart = this.hours + " " + this.GetHoursDisplayValueByLanguage() + ", ";
+    const minutesPart = this.minutes + " " + this.GetMinutesDisplayValueByLanguage() + ", ";
+    const secondsPart = this.seconds + " " + this.GetSecondsDisplayValueByLanguage();
 
-    var displayValue;
+    let displayValue;
 
     if (this.days > 0)
     {
@@ -79,46 +102,85 @@ export class DipAssistTimeRemaining{
     }
     else
     {
-      displayValue = "The deadline has passed.";
+      displayValue = this.GetDeadlinePassedTextByLanguage();
     }
 
     
     return displayValue;
   }
 
+  public GetTimeRemainingSpokenText() : string 
+  {
+    this.DoValidationCheck();
+    const daysPart = this.days + " " + this.GetDaysDisplayValueByLanguage() + ", ";
+    const hoursPart = this.hours + " " + this.GetHoursDisplayValueByLanguage() + ", ";
+    const minutesPart = this.minutes + " " + this.GetMinutesDisplayValueByLanguage() + ", ";
+    const secondsPart = this.seconds + " " + this.GetSecondsDisplayValueByLanguage() + ", ";
+
+    let spokentext = "";
+
+    if (this.days > 0)
+    {
+      spokentext += daysPart;
+    }
+    else if (this.hours > 0)
+    {
+      spokentext += hoursPart;
+    }
+    else if (this.minutes > 0)
+    {
+      spokentext += minutesPart;
+    }
+    else if (this.seconds > 0)
+    {
+      spokentext += secondsPart;
+    }
+
+    if (spokentext != ""){
+      spokentext = spokentext.substring(0,spokentext.length-2);
+      spokentext += this.GetCountdownClosingTextByLanguage();
+    }
+    else
+    {
+      spokentext = this.GetDeadlinePassedTextByLanguage();
+    }
+    
+    return spokentext;
+  }
+
   private DaysFromMilliseconds() : number
   {
-    if (this.milliseconds == null) return 0;
+    if (this.totalMilliseconds == null) return 0;
 
-    return Math.floor(this.milliseconds / this.MILLISECONDS_PER_DAY);
+    return Math.floor(this.totalMilliseconds / this.MILLISECONDS_PER_DAY);
   }
 
   private HoursFromMilliseconds() : number
   {
-    if (this.milliseconds == null) return 0;
+    if (this.totalMilliseconds == null) return 0;
 
-    // var days = this.DaysFromMilliseconds();
-    // var millisecondsAfterDays = this.milliseconds - (days * this.MILLISECONDS_PER_DAY);
+    // let days = this.DaysFromMilliseconds();
+    // let millisecondsAfterDays = this.totalMilliseconds - (days * this.MILLISECONDS_PER_DAY);
 
-    return Math.floor(this.milliseconds / this.MILLISECONDS_PER_HOUR );
+    return Math.floor(this.totalMilliseconds / this.MILLISECONDS_PER_HOUR );
   }
 
   private MinutesFromMilliseconds() : number
   {
-    if (this.milliseconds == null) return 0;
+    if (this.totalMilliseconds == null) return 0;
 
-    var hours = this.HoursFromMilliseconds();
-    var millisecondsAfterHours = this.milliseconds - (hours * this.MILLISECONDS_PER_HOUR);
+    const hours = this.HoursFromMilliseconds();
+    const millisecondsAfterHours = this.totalMilliseconds - (hours * this.MILLISECONDS_PER_HOUR);
 
     return Math.floor(millisecondsAfterHours /  this.MILLISECONDS_PER_MINUTE);
   }
 
   private SecondsFromMilliseconds() : number
   {
-    if (this.milliseconds == null) return 0;
+    if (this.totalMilliseconds == null) return 0;
 
-    var minutes = this.MinutesFromMilliseconds();
-    var millisecondsAfterMinutes = this.milliseconds - (this.hours * this.MILLISECONDS_PER_HOUR) - (minutes *  this.MILLISECONDS_PER_MINUTE);
+    const minutes = this.MinutesFromMilliseconds();
+    const millisecondsAfterMinutes = this.totalMilliseconds - (this.hours * this.MILLISECONDS_PER_HOUR) - (minutes *  this.MILLISECONDS_PER_MINUTE);
 
     return Math.floor(millisecondsAfterMinutes / this.MILLISECONDS_PER_SECOND);
   }
@@ -189,6 +251,48 @@ export class DipAssistTimeRemaining{
     return displayValue;
   }
 
+  private GetDeadlinePassedTextByLanguage()
+  {
+    let displayValue : string;
+    switch(this.language)
+    {
+      case "English":
+        displayValue = "The deadline has passed";
+        break;
+      case "French":
+        displayValue = "wuuut";
+        break;
+      default:
+          throw new Error("unsupported language in DipAssistTimeRemaining: " + this.language);
+    }
+    return displayValue;
+  }
+
+  private GetCountdownClosingTextByLanguage()
+  {
+    let lastIsPlural = true;
+    const arr = [this.seconds, this.minutes, this.hours, this.days];
+    for (const elm of arr) {
+      lastIsPlural = (elm==1);
+      if(elm > 0) break;
+    }
+
+    let displayValue : string;
+    switch(this.language)
+    {
+      case "English":
+        displayValue = "remaining";
+        break;
+      case "French":
+        displayValue = "restante";
+        if(lastIsPlural) displayValue += "s";
+        break;
+      default:
+          throw new Error("unsupported language in DipAssistTimeRemaining: " + this.language);
+    }
+    return displayValue;
+  }
+
   private GetCountdownStyleColor()
   {
     if (this.days == 0 && this.hours == 0 && this.minutes == 0)
@@ -202,9 +306,8 @@ export class DipAssistTimeRemaining{
     return "font-Size : 250%;";
   }
 
-  private milliseconds: number;
   private MILLISECONDS_PER_DAY : number = 1000 * 60 * 60 * 24;
   private MILLISECONDS_PER_HOUR : number = 1000 * 60 * 60;
   private MILLISECONDS_PER_MINUTE : number = 1000 * 60;
-  private MILLISECONDS_PER_SECOND : number = 1000;
+  private MILLISECONDS_PER_SECOND = 1000;
 }
