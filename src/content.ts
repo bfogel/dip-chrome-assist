@@ -1,85 +1,79 @@
+import { DipAssistTimeRemaining } from "./DipAssistTimeRemaining";
+import { DipAssistAlertManager } from './DipAssistAlertManager';
+
 let mDeadline: number;
 let mCountdownSpan: HTMLElement | null;
 
+let timeAssist: DipAssistTimeRemaining;
+const mAlertManager  = new DipAssistAlertManager();
+
 function SetupCountdownTimer() {
-  const elm = document.getElementById("adjudication-info");
-  if (elm == null) return;
+  const AdjudicationInfoSpan = document.getElementById("adjudication-info");
+  if (AdjudicationInfoSpan == null) return;
+ 
+  const deadline = GetDeadlineFromAdjudicationInfoText( AdjudicationInfoSpan.innerHTML );
+  if (deadline === undefined) return;
 
-  let s = elm.innerHTML;
-  elm.innerHTML += "<br><span id='dipCountdownSpan'>poop</span>";
+  mDeadline = Number( deadline );
+
+  //Uncomment the line below to set a nearby deadline for testing
+  //mDeadline = Date.now() + 0 * 60000 + 5*1000;
+   
+  const DeadlineDate = new Date(mDeadline);
+
+  //NOTE: This is language-specific and will need to be modified for support beyond English
+  AdjudicationInfoSpan.innerHTML = "Next adjudication: " + DeadlineDate.toString() + ".";
+  AdjudicationInfoSpan.innerHTML += "<br><span id='dipCountdownSpan'>iguana</span>";
+
   mCountdownSpan = document.getElementById("dipCountdownSpan");
+  timeAssist = new DipAssistTimeRemaining("English");
 
-  let ss = s.split("(");
-  if (ss.length < 2) return;
+  timeAssist.InitialitizeCountdown(mDeadline - Date.now());
+  //mAlertManager.AddAlert(mDeadline - Date.now() - 10 * 1000);
 
-  s = ss[1];
-  if (s.length < 3) return;
-  s = s.slice(3);
+} 
 
-  ss = s.split(")");
-  if (ss.length < 1) return;
-  s = ss[0];
+function GetDeadlineFromAdjudicationInfoText(pText : string) : number | undefined {
+  let iSearch = pText.indexOf("(");
+  if(iSearch == -1) undefined;
 
-  mDeadline = Date.parse(s);
+  let sDeadlineTimeAndDate = pText.substring(iSearch+1).trim();
+
+  iSearch = sDeadlineTimeAndDate.indexOf(")");
+  if(iSearch == -1) return undefined;
+  sDeadlineTimeAndDate = sDeadlineTimeAndDate.substring(0, iSearch).trim();
+
+  //NOTE: This is language-specific and will need to be modified for support beyond English
+  if(sDeadlineTimeAndDate.substring(0,2) == "at") sDeadlineTimeAndDate = sDeadlineTimeAndDate.substring(2).trim();
+
+  const sTimeZone = sDeadlineTimeAndDate.substring(sDeadlineTimeAndDate.length-4, sDeadlineTimeAndDate.length).trim();
+  sDeadlineTimeAndDate = sDeadlineTimeAndDate.substring(0,sDeadlineTimeAndDate.length-4).trim();
+
+  iSearch = sDeadlineTimeAndDate.indexOf(",");
+  if(iSearch == -1) return undefined;
+  const sTime = sDeadlineTimeAndDate.substring(0, iSearch).trim();
+  const sDate = sDeadlineTimeAndDate.substring(iSearch+1).trim();
+
+  sDeadlineTimeAndDate = sDate + " " + sTime + " " + sTimeZone;
+
+  return Date.parse( sDeadlineTimeAndDate );
 
 }
 
 function UpdateCountdown() {
   if (mDeadline == null) return;
   if (mCountdownSpan == null) return;
+  if (timeAssist == null || !timeAssist.IsInitialized()) return;
 
-  let countdown = mDeadline - Date.now();
+  const totalms = Math.max(0, mDeadline-Date.now());
+  timeAssist.UpdateCountdown(totalms);
 
-  if (countdown < 0) countdown = 0;
+  mCountdownSpan.innerHTML = timeAssist.GetTimeRemainingDisplayValue();
+  mCountdownSpan.setAttribute("style", timeAssist.GetSpanStylePartFromTimeRemaining());
 
-  const hours = Math.floor(countdown / 3600000);
-  countdown -= 3600000 * hours;
+  mAlertManager.CheckForAlert(timeAssist);
 
-  const minutes = Math.floor(countdown / 60000);
-  countdown -= 60000 * minutes;
-
-  const seconds = Math.floor(countdown / 1000);
-
-  const s = hours.toString() + " hours, " + minutes.toString().padStart(2, "0") + " minutes, " + seconds.toString().padStart(2, "0") + " seconds";
-  mCountdownSpan.innerHTML = s;
-
-  var style = GetCountdownStyle(hours, minutes);
-  mCountdownSpan.setAttribute("style", style);
-
-  if (countdown > 0) {
-    if (seconds == 0) {
-      Speak(minutes.toString() + " minutes left");
-    }
-    setTimeout(UpdateCountdown, 1000);
-  }
-}
-
-function Speak(sText: string) {
-  chrome.runtime.sendMessage({ toSay: sText });
-}
-
-function GetCountdownStyle(hours : number, minutes : number)
-{
-  var fontSize = GetCountdownStyleFontSize();
-  var color = GetCountdownStyleColor(hours, minutes);
-  return fontSize+color;
-}
-
-function GetCountdownStyleFontSize()
-{
-  return "font-Size : 250%;";
-}
-
-function GetCountdownStyleColor(hours : number, minutes : number)
-{
-  if (hours == 0 && minutes == 0)
-  {
-    return "color : red;";
-  }
-  else
-  {
-    return "";
-  }
+  setTimeout(UpdateCountdown, 1000);
 }
 
 SetupCountdownTimer();

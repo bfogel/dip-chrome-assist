@@ -1,3 +1,9 @@
+
 chrome.runtime.onMessage.addListener(function (request) {
-    chrome.tts.speak(request.toSay);
+
+    if(request.toSay != undefined){
+        chrome.tts.speak( String(request.toSay) );
+    } else {
+        //do nothing
+    }
 });

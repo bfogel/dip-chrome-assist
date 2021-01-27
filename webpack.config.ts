@@ -3,9 +3,13 @@ import * as webpack from 'webpack';
 import CopyPlugin from 'copy-webpack-plugin';
 import ExtensionReloader from 'webpack-extension-reloader';
 
+  
 const config: webpack.Configuration = {
+
     entry: {
         'background': './src/background.ts',
+        'DipAssistTimeRemaining': './src/DipAssistTimeRemaining.ts',
+        'DipAssistAlertManager': './src/DipAssistAlertManager.ts',
         'content': './src/content.ts'
     },
 
@@ -31,13 +35,14 @@ const config: webpack.Configuration = {
     plugins: [
         new CopyPlugin([
             { from: 'manifest.json' }
-        ]),
+        ])
+        ,
         new (ExtensionReloader as any)({
             port: 9090,
             reloadPage: true,
             entries: {
                 background: 'background',
-                contentScript: ['content']
+                contentScript: ['DipAssistTimeRemaining','DipAssistAlertManager','content']
             }
         })
     ]
