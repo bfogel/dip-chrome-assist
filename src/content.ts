@@ -1,8 +1,8 @@
 import { DipAssistTimeRemaining } from "./DipAssistTimeRemaining";
 import { DipAssistAlertManager } from "./DipAssistAlertManager";
-
+ 
 let mDeadline: number;
-
+ 
 let timeAssist: DipAssistTimeRemaining;
 const mAlertManager = new DipAssistAlertManager();
 
