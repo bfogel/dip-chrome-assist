@@ -8,6 +8,9 @@ export class DipAssistAlertManager {
         this.AddAlert(2 * 60000);
         this.AddAlert(1 * 60000);
         this.AddAlert(0.5 * 60000);
+        this.AddAlert(15000);
+        this.AddAlert(10000);
+        this.AddAlert(5000);
         this.AddAlert(0);
     }
 
@@ -19,8 +22,7 @@ export class DipAssistAlertManager {
      * Causes an alert to be raised when the time remaining passes pMinutes 
      */
     public AddAlert(pTimeRemainingInMilliseconds: number) : void {
-        const timeRemaining = new DipAssistTimeRemaining();
-        timeRemaining.InitialitizeCountdown(pTimeRemainingInMilliseconds);
+        const timeRemaining = new DipAssistTimeRemaining(pTimeRemainingInMilliseconds);
         this.AlertsAt.push( timeRemaining );
         this.AlertsAt.sort();
         this.AlertsAt.reverse();
