@@ -1,4 +1,5 @@
 import { DipAssistTimeRemaining } from "./DipAssistTimeRemaining";
+import UserSettings from "./DipAssistUserSettings";
 
 export class DipAssistAlertManager {
  
@@ -48,7 +49,7 @@ export class DipAssistAlertManager {
     }
 
     private RaiseAlert(pTimeRemaining : DipAssistTimeRemaining) {
-        this.Speak(pTimeRemaining.GetTimeRemainingSpokenText());
+        if(UserSettings.VoiceAlertsEnabled) this.Speak(pTimeRemaining.GetTimeRemainingSpokenText());
     }
 
     public Speak(sText: string) : void {

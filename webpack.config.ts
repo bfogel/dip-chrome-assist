@@ -10,6 +10,7 @@ const config: webpack.Configuration = {
         'background': './src/background.ts',
         'DipAssistTimeRemaining': './src/DipAssistTimeRemaining.ts',
         'DipAssistAlertManager': './src/DipAssistAlertManager.ts',
+        'DipAssistUserSettings': './src/DipAssistUserSettings.ts',
         'popup': './src/popup.ts',
         'content': './src/content.ts'
     },
@@ -45,7 +46,7 @@ const config: webpack.Configuration = {
             reloadPage: true,
             entries: {
                 background: 'background',
-                contentScript: ['DipAssistTimeRemaining','DipAssistAlertManager','content', 'popup']
+                contentScript: ['DipAssistUserSettings', 'DipAssistTimeRemaining','DipAssistAlertManager','content', 'popup']
             }
         })
     ]

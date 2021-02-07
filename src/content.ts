@@ -1,8 +1,12 @@
 import { DipAssistTimeRemaining } from "./DipAssistTimeRemaining";
 import { DipAssistAlertManager } from "./DipAssistAlertManager";
- 
+import UserSettings from "./DipAssistUserSettings";
+
 let mDeadline: number;
- 
+let mOriginalAdjudicationInfoText: string;
+let mGameIsWaitingForAdjudication: boolean;
+let mGameIsInGrace: boolean;
+
 let timeAssist: DipAssistTimeRemaining;
 const mAlertManager = new DipAssistAlertManager();
 
@@ -10,23 +14,20 @@ function SetupCountdownTimer() {
   const AdjudicationInfoSpan = document.getElementById("adjudication-info");
   if (AdjudicationInfoSpan == null) return;
 
-  const deadline = GetDeadlineFromAdjudicationInfoText(AdjudicationInfoSpan.innerHTML);
-  if (deadline === undefined) return;
+  mOriginalAdjudicationInfoText = AdjudicationInfoSpan.innerHTML;
+
+  mGameIsWaitingForAdjudication = mOriginalAdjudicationInfoText.includes("Waiting for adjudication");
+  mGameIsInGrace = mOriginalAdjudicationInfoText.includes("grace period");
+
+  const deadline = GetDeadlineFromAdjudicationInfoText(mOriginalAdjudicationInfoText);
+  if (deadline === undefined || deadline == null) return;
 
   mDeadline = Number(deadline);
 
   //Uncomment the line below to set a nearby deadline for testing
   //mDeadline = Date.now() + 0 * 60000 + 17 * 1000;
 
-  const DeadlineDate = new Date(mDeadline);
-
-  //NOTE: This is language-specific and will need to be modified for support beyond English
-  AdjudicationInfoSpan.innerHTML = "Next adjudication: " + DeadlineDate.toString();
-  AdjudicationInfoSpan.innerHTML += "<br><span id='dipCountdownSpan'>iguana</span>";
-
   timeAssist = new DipAssistTimeRemaining(mDeadline - Date.now());
-
-  //mAlertManager.AddAlert(mDeadline - Date.now() - 10 * 1000);
 
 }
 
@@ -51,19 +52,72 @@ function GetDeadlineFromAdjudicationInfoText(pText: string): number | undefined 
   const sTime = sDeadlineTimeAndDate.substring(0, iSearch).trim();
   const sDate = sDeadlineTimeAndDate.substring(iSearch + 1).trim();
 
-  sDeadlineTimeAndDate = sDate + " " + sTime + " " + sTimeZone;
+  let iOffsetFromUTC: number | undefined = undefined;
+  switch (sTimeZone) {
+    case "GMT": iOffsetFromUTC = 0; break;
+    case "BST":
+    case "CET": iOffsetFromUTC = 1; break;
+    case "CEST": 
+    case "EET": iOffsetFromUTC = 2; break;
+    case "MSK": 
+    case "FET": 
+    case "EEST": iOffsetFromUTC = 3; break;
+    case "AWST": iOffsetFromUTC = 8; break;
+    case "ACST": iOffsetFromUTC = 9.5; break;
+    case "AEST": iOffsetFromUTC = 10; break;
+    case "ACDT": iOffsetFromUTC = 10.5; break;
+    case "AEDT": iOffsetFromUTC = 11; break;
+    default: break;
+  }
 
-  return Date.parse(sDeadlineTimeAndDate);
+  sDeadlineTimeAndDate = sDate + " " + sTime + ((iOffsetFromUTC === undefined) ? " " + sTimeZone : "");
+
+  let ret = Date.parse(sDeadlineTimeAndDate);
+  if(isNaN(ret)) return undefined;
+
+  if (iOffsetFromUTC !== undefined) {
+    iOffsetFromUTC += new Date().getTimezoneOffset() / 60;
+    ret -= iOffsetFromUTC * 60 * 60 * 1000;
+  }
+
+  return ret;
+}
+
+function SetupDisplay() {
+
+  const AdjudicationInfoSpan = document.getElementById("adjudication-info");
+  if (AdjudicationInfoSpan == null) return;
+
+  //NOTE: This is language-specific and will need to be modified for support beyond English
+  let s = "<span id ='dipAdjudicationInfo'></span>";
+  s += "<br><span id = 'dipCountdownSpan'>iguana</span>"
+  AdjudicationInfoSpan.innerHTML = s;
 
 }
 
-function UpdateCountdown() {
+function UpdateDisplay() {
 
   const countdownSpan = document.getElementById("dipCountdownSpan");
+  if (countdownSpan == null) return;
+
+  if (timeAssist == null || !timeAssist.IsInitialized()) {
+    countdownSpan.innerHTML = mOriginalAdjudicationInfoText + "<br>(DipAssist could not initialize countdown. Ask the GM to try a different time zone.)";
+    return;
+  }
 
   if (mDeadline == null) return;
-  if (countdownSpan == null) return;
-  if (timeAssist == null || !timeAssist.IsInitialized()) return;
+
+  let sAdjudicationInfo: string;
+  if (UserSettings.ShowOriginalText) {
+    sAdjudicationInfo = mOriginalAdjudicationInfoText;
+  } else {
+    const DeadlineDate = new Date(mDeadline);
+    sAdjudicationInfo = "Next adjudication: " + DeadlineDate.toString();
+    if (mGameIsWaitingForAdjudication) sAdjudicationInfo += "<br><i>(Waiting for adjudication!)</i>";
+    if (mGameIsInGrace) sAdjudicationInfo += "<br><i>(Game is in grace period)</i>";
+  }
+  const AdjudicationInfoSpan = document.getElementById('dipAdjudicationInfo');
+  if (AdjudicationInfoSpan != null) AdjudicationInfoSpan.innerHTML = sAdjudicationInfo;
 
   let totalms = Math.max(0, mDeadline - Date.now());
   totalms = 1000 * Math.floor(totalms / 1000);
@@ -74,9 +128,11 @@ function UpdateCountdown() {
 
   mAlertManager.CheckForAlert(timeAssist);
 
-  setTimeout(UpdateCountdown, 1000);
+  setTimeout(UpdateDisplay, 1000);
 }
 
 SetupCountdownTimer();
-UpdateCountdown();
+SetupDisplay();
+UserSettings.EnsureValuesAreLoaded(UpdateDisplay);
+UserSettings.OnPropertyChanged = UpdateDisplay;
 

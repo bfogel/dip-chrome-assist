@@ -1,33 +1,63 @@
 
-function UpdateLanguageSelect() {
+import UserSettings from "./DipAssistUserSettings";
 
-    chrome.storage.sync.get(['DipAssistLanguage'], function (result) {
+function UpdateValues() {
+ 
+    UserSettings.EnsureValuesAreLoaded(() => {
 
-        const val = result.DipAssistLanguage;
-        if (val === undefined) return;
+        const radio = document.getElementById('LanguageSelect' + UserSettings.Language);
+        if (radio != null && (radio instanceof HTMLInputElement)) (<HTMLInputElement>radio).checked = true;
 
-        const radio = document.getElementById('LanguageSelect' + val);
-        if (radio == null) return;
-        if (!(radio instanceof HTMLInputElement)) return;
+        const ckbVoiceAlerts = document.getElementById('VoiceAlertsEnabled') as HTMLInputElement;
+        if (ckbVoiceAlerts != null && ckbVoiceAlerts instanceof HTMLInputElement) ckbVoiceAlerts.checked = UserSettings.VoiceAlertsEnabled;
 
-        (<HTMLInputElement>radio).checked = true;
+        const ddnVolume = document.getElementById('VoiceAlertsVolume') as HTMLSelectElement;
+        if (ddnVolume != null && ddnVolume instanceof HTMLSelectElement) ddnVolume.value = String(UserSettings.VoiceAlertsVolume);
+
+        const ckbShowOriginalText = document.getElementById('ShowOriginalText') as HTMLInputElement;
+        if (ckbShowOriginalText != null && ckbShowOriginalText instanceof HTMLInputElement) ckbShowOriginalText.checked = UserSettings.ShowOriginalText;
 
     });
 
 }
 
-function SetLanguageSelect(value: string) {
-    console.log("SetLanguageSelect: " + value);
-    chrome.storage.sync.set({ 'DipAssistLanguage': value });
-}
-
-function SetupRadioButtonCallbacks() {
+function SetupCallbacks() {
     const radEnglish = document.getElementById('LanguageSelectEnglish');
-    if (radEnglish != null) radEnglish.onclick = function () { SetLanguageSelect('English'); }
+    if (radEnglish != null) radEnglish.onclick = function () { UserSettings.Language = 'English'; }
 
     const radFrench = document.getElementById('LanguageSelectFrench');
-    if (radFrench != null) radFrench.onclick = function () { SetLanguageSelect('French'); }
+    if (radFrench != null) radFrench.onclick = function () { UserSettings.Language = 'French'; }
+
+    const ckbVoiceAlerts = document.getElementById('VoiceAlertsEnabled') as HTMLInputElement;
+    if (ckbVoiceAlerts != null) ckbVoiceAlerts.onchange = function () {UserSettings.VoiceAlertsEnabled = ckbVoiceAlerts.checked; }
+
+    const ddnVolume = document.getElementById('VoiceAlertsVolume') as HTMLSelectElement;
+    if (ddnVolume != null) ddnVolume.onchange = function () {UserSettings.VoiceAlertsVolume = Number(ddnVolume.value); }
+
+    const ckbShowOriginalText = document.getElementById('ShowOriginalText') as HTMLInputElement;
+    if (ckbShowOriginalText != null) ckbShowOriginalText.onchange = function () {UserSettings.ShowOriginalText = ckbShowOriginalText.checked; }
+
+    const btnTestSpeech = document.getElementById('btnTestSpeech') as HTMLButtonElement;
+    if (btnTestSpeech != null) btnTestSpeech.onclick = function () { testSpeech(); }
+
 }
 
-UpdateLanguageSelect();
-SetupRadioButtonCallbacks();
+function testSpeech(){
+    let ss : string;
+
+    switch (UserSettings.Language) {
+        case "English":
+          ss = "The deadline has passed";
+          break;
+        case "French":
+          ss = "La limite de temps est passée";
+          break;
+        default:
+          throw new Error("unsupported language in DipAssistTimeRemaining: " + this.language);
+      }
+      
+      chrome.runtime.sendMessage({ toSay: ss });
+}
+
+UpdateValues();
+SetupCallbacks();

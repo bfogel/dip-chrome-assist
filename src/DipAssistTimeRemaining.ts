@@ -1,33 +1,36 @@
 
-function IniatializeDipAssistTimeRemainingLanguageTracking() {
+import UserSettings from "./DipAssistUserSettings";
 
-  chrome.storage.sync.get(['DipAssistLanguage'], function (result) {
-    const val = result.DipAssistLanguage;
-    if (val === undefined) return;
-    switch (val) {
-      case "English":
-      case "French":
-        DipAssistLanguage = val;
-        break;
-      default:
-    }
+// function IniatializeDipAssistTimeRemainingLanguageTracking() {
 
-  });
+//   chrome.storage.sync.get(['DipAssistLanguage'], function (result) {
+//     const val = result.DipAssistLanguage;
+//     if (val === undefined) return;
+//     switch (val) {
+//       case "English":
+//       case "French":
+//         DipAssistLanguage = val;
+//         break;
+//       default:
+//     }
 
-  chrome.storage.onChanged.addListener(function (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) {
+//   });
 
-    for (const key in changes) {
-      if (key == "DipAssistLanguage") {
-        const val = changes[key].newValue;
-        if (val != null) DipAssistLanguage = val;
-      }
-    }
- 
-  })
-}
+//   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+//   chrome.storage.onChanged.addListener(function (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) {
 
-let DipAssistLanguage = "English";
-IniatializeDipAssistTimeRemainingLanguageTracking();
+//     for (const key in changes) {
+//       if (key == "DipAssistLanguage") {
+//         const val = changes[key].newValue;
+//         if (val != null) DipAssistLanguage = val;
+//       }
+//     }
+
+//   })
+// }
+
+// let DipAssistLanguage = "English";
+// IniatializeDipAssistTimeRemainingLanguageTracking();
 
 export class DipAssistTimeRemaining {
 
@@ -51,18 +54,33 @@ export class DipAssistTimeRemaining {
   }
   public set totalMilliseconds(value: number) {
     this._totalMilliseconds = value;
-    this._days = this.DaysFromMilliseconds();
-    this._hours = this.HoursFromMilliseconds();
-    this._minutes = this.MinutesFromMilliseconds();
-    this._seconds = this.SecondsFromMilliseconds();
+
+    let millisecondsRemaining = this._totalMilliseconds;
+
+    this._days = Math.floor(millisecondsRemaining / this.MILLISECONDS_PER_DAY)
+    millisecondsRemaining -= this.MILLISECONDS_PER_DAY * this._days;
+
+    this._hours = Math.floor(millisecondsRemaining / this.MILLISECONDS_PER_HOUR)
+    millisecondsRemaining -= this.MILLISECONDS_PER_HOUR * this._hours;
+
+    this._minutes = Math.floor(millisecondsRemaining / this.MILLISECONDS_PER_MINUTE)
+    millisecondsRemaining -= this.MILLISECONDS_PER_MINUTE * this._minutes;
+
+    this._seconds = Math.floor(millisecondsRemaining / this.MILLISECONDS_PER_SECOND)
+    millisecondsRemaining -= this.MILLISECONDS_PER_SECOND * this._seconds;
   }
 
+  private MILLISECONDS_PER_DAY: number = 1000 * 60 * 60 * 24;
+  private MILLISECONDS_PER_HOUR: number = 1000 * 60 * 60;
+  private MILLISECONDS_PER_MINUTE: number = 1000 * 60;
+  private MILLISECONDS_PER_SECOND = 1000;
+
   public get language(): string {
-    return DipAssistLanguage;
+    return UserSettings.Language;
   }
 
   public Duplicate(): DipAssistTimeRemaining {
-    return new DipAssistTimeRemaining(this.totalMilliseconds) ;
+    return new DipAssistTimeRemaining(this.totalMilliseconds);
   }
 
   public IsInitialized(): boolean {
@@ -161,39 +179,6 @@ export class DipAssistTimeRemaining {
     }
 
     return spokentext;
-  }
-
-  private DaysFromMilliseconds(): number {
-    if (this.totalMilliseconds == null) return 0;
-
-    return Math.floor(this.totalMilliseconds / this.MILLISECONDS_PER_DAY);
-  }
-
-  private HoursFromMilliseconds(): number {
-    if (this.totalMilliseconds == null) return 0;
-
-    // let days = this.DaysFromMilliseconds();
-    // let millisecondsAfterDays = this.totalMilliseconds - (days * this.MILLISECONDS_PER_DAY);
-
-    return Math.floor(this.totalMilliseconds / this.MILLISECONDS_PER_HOUR);
-  }
-
-  private MinutesFromMilliseconds(): number {
-    if (this.totalMilliseconds == null) return 0;
-
-    const hours = this.HoursFromMilliseconds();
-    const millisecondsAfterHours = this.totalMilliseconds - (hours * this.MILLISECONDS_PER_HOUR);
-
-    return Math.floor(millisecondsAfterHours / this.MILLISECONDS_PER_MINUTE);
-  }
-
-  private SecondsFromMilliseconds(): number {
-    if (this.totalMilliseconds == null) return 0;
-
-    const minutes = this.MinutesFromMilliseconds();
-    const millisecondsAfterMinutes = this.totalMilliseconds - (this.hours * this.MILLISECONDS_PER_HOUR) - (minutes * this.MILLISECONDS_PER_MINUTE);
-
-    return Math.floor(millisecondsAfterMinutes / this.MILLISECONDS_PER_SECOND);
   }
 
   private GetDaysDisplayValueByLanguage() {
@@ -302,8 +287,4 @@ export class DipAssistTimeRemaining {
     return "font-Size : 250%;";
   }
 
-  private MILLISECONDS_PER_DAY: number = 1000 * 60 * 60 * 24;
-  private MILLISECONDS_PER_HOUR: number = 1000 * 60 * 60;
-  private MILLISECONDS_PER_MINUTE: number = 1000 * 60;
-  private MILLISECONDS_PER_SECOND = 1000;
 }

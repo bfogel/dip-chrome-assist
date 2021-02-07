@@ -9,12 +9,24 @@
       font-family: sans-serif;
       font-size: 1.2em;
       margin-top: 1px;
-      white-space: nowrap;
+      /* white-space: nowrap; */
     }
 
     div.title {
       font-size: 2em;
       font-weight: bold;
+    }
+
+    div.settings {
+      margin-bottom: 10px;
+    }
+
+    div.allsettings {
+      border: 1px solid;
+      white-space: nowrap;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      background-color: lightgray;
     }
 
     input.languageSelect {
@@ -28,12 +40,37 @@
 
   <p style="white-space: nowrap;"><i>Your virtual ftf assistant</i></p>
 
-  <p style="white-space: nowrap; margin-top: 20px; margin-bottom: 20px;">
-    <input type="radio" class="languageSelect" id="LanguageSelectEnglish" name="LanguageSelect" value="English" checked>
-    <label for="LanguageSelectEnglish">English</label>
-    <input type="radio" class="languageSelect" id="LanguageSelectFrench" name="LanguageSelect" value="French">
-    <label for="LanguageSelectFrench">French</label>
-  </p>
+  <div>
+    For an accurate countdown, make sure your computer's time is set automatically.
+  </div>
+
+  <div class="allsettings">
+    <div class="settings">
+      Language:
+      <input type="radio" class="languageSelect" id="LanguageSelectEnglish" name="LanguageSelect" value="English"
+        checked>
+      <label for="LanguageSelectEnglish">English</label>
+      &nbsp;
+      <input type="radio" class="languageSelect" id="LanguageSelectFrench" name="LanguageSelect" value="French">
+      <label for="LanguageSelectFrench">French</label>
+    </div>
+    <div class="settings">
+      <label for="VoiceAlertsEnabled">Voice alerts:</label>
+      <input type="checkbox" id="VoiceAlertsEnabled" name="VoiceAlertsEnabled" checked>
+      <br>
+      <label for="VoiceAlertsVolume">Volume:</label>
+      <select name="VoiceAlertsVolume" id="VoiceAlertsVolume">
+        <option value="0.2">Soft</option>
+        <option value="0.5">Medium</option>
+        <option value="1">Loud</option>
+      </select>
+      <button id="btnTestSpeech" onclick="testSpeech()">test</button>
+    </div>
+    <div class="settings">
+      <label for="ShowOriginalText">Show original text:</label>
+      <input type="checkbox" id="ShowOriginalText" name="ShowOriginalText">
+    </div>
+  </div>
 
   <p>Brought to you by</p>
   <div style="text-align: center;">
@@ -43,4 +80,5 @@
 
 </body>
 <script src="popup.js"></script>
+
 </html>

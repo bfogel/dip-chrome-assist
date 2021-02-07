@@ -12,7 +12,7 @@ See Issues for planned improvements.
 5) Navigate to chrome://extensions/
 6) Click `Load unpacked` -> open `dist`
 
-To avoid Uncaught EvalError, include this in manifest.json:     
+To avoid Uncaught EvalError (which interfers with the Reloader), include this in manifest.json:     
     
     "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
 

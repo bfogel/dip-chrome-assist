@@ -1,12 +1,15 @@
 {
   "manifest_version": 2,
   "name": "DipAssist",
-  "version": "0.1.0",
+  "version": "0.2.8",
   "description" : "An assistant for virtual face-to-face Diplomacy.",
   "permissions": [
     "tts",
     "storage"
   ],
+  
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+  
   "content_scripts": [
     {
       "matches": [
@@ -15,6 +18,7 @@
       "js": [
         "DipAssistTimeRemaining.js",
         "DipAssistAlertManager.js",
+        "DipAssistUserSettings.js",
         "content.js"
       ]
     }
